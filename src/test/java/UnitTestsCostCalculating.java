@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UnitTestsCostCalculating {
 
@@ -16,21 +17,27 @@ public class UnitTestsCostCalculating {
 
         Delivery delivery1 = new Delivery(30, CargoDimension.SMALL, false, ServiceWorkload.INCREASED);
         assertEquals(400, delivery1.calculateDeliveryCost());
+
+        Delivery delivery2 = new Delivery(0, CargoDimension.LARGE, true, ServiceWorkload.VERY_HIGH);
+        assertEquals(880, delivery2.calculateDeliveryCost());
+
     }
 
     @Test
     @Tag("Positive")
-    @DisplayName("Checking cost delivery for destination 1-2km")
-    void testDestinationDelivery2km() {
+    @DisplayName("Checking cost delivery for distance 1-2km")
+    void testDistanceDelivery2km() {
         Delivery delivery = new Delivery(2, CargoDimension.LARGE, true, ServiceWorkload.VERY_HIGH);
         assertEquals(880, delivery.calculateDeliveryCost());
 
+
+
     }
 
     @Test
     @Tag("Positive")
-    @DisplayName("Checking cost delivery for destination 3-10km")
-    void testDestinationDelivery10km() {
+    @DisplayName("Checking cost delivery for distance 3-10km")
+    void testDistanceDelivery10km() {
         Delivery delivery = new Delivery(3, CargoDimension.LARGE, true, ServiceWorkload.VERY_HIGH);
         assertEquals(960, delivery.calculateDeliveryCost());
 
@@ -40,8 +47,8 @@ public class UnitTestsCostCalculating {
 
     @Test
     @Tag("Positive")
-    @DisplayName("Checking cost delivery for destination 11-30km")
-    void testDestinationDelivery30km() {
+    @DisplayName("Checking cost delivery for distance 11-30km")
+    void testDistanceDelivery30km() {
         Delivery delivery = new Delivery(11, CargoDimension.LARGE, true, ServiceWorkload.NORMAL);
         assertEquals(700, delivery.calculateDeliveryCost());
 
@@ -51,12 +58,25 @@ public class UnitTestsCostCalculating {
 
     @Test
     @Tag("Positive")
-    @DisplayName("Checking cost delivery for destination >= 31km")
-    void testDestinationDeliveryMoreThan30km() {
+    @DisplayName("Checking cost delivery for distance >= 31km")
+    void testDistanceDeliveryMoreThan30km() {
         Delivery delivery = new Delivery(31, CargoDimension.LARGE, false, ServiceWorkload.NORMAL);
         assertEquals(500, delivery.calculateDeliveryCost());
 
     }
+
+    @Test
+    @Tag("Negative")
+    @DisplayName("Checking delivery for negative distance")
+    void testCalculatingDeliveryNegativeDistance() {
+        Delivery delivery = new Delivery(-1, CargoDimension.SMALL, true, ServiceWorkload.NORMAL);
+        Throwable exception = assertThrows(
+                IllegalArgumentException.class,
+                delivery::calculateDeliveryCost
+        );
+        assertEquals("destinationDistance should be a positive number!", exception.getMessage());
+    }
+
 
     @Test
     @Tag("Positive")
@@ -80,6 +100,18 @@ public class UnitTestsCostCalculating {
     void testCalculatingDeliveryFragilePackage() {
         Delivery delivery = new Delivery(30, CargoDimension.SMALL, true, ServiceWorkload.NORMAL);
         assertEquals(600, delivery.calculateDeliveryCost());
+    }
+
+    @Test
+    @Tag("Negative")
+    @DisplayName("Checking impossibility delivery for fragile package on distance more than 30km")
+    void testCalculatingDeliveryFragilePackage31km() {
+        Delivery delivery = new Delivery(31, CargoDimension.SMALL, true, ServiceWorkload.NORMAL);
+        Throwable exception = assertThrows(
+                UnsupportedOperationException.class,
+                delivery::calculateDeliveryCost
+        );
+        assertEquals("Fragile cargo cannot be delivered for the distance more than 30", exception.getMessage());
     }
 
 
